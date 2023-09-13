@@ -54,7 +54,6 @@
 
                     <div>
                         <input type="submit" class="btn btn-primary">
-                        <input type="reset" class="btn btn-secondary">
                     </div>
                 </form>
             </div>
@@ -71,7 +70,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div id="edit-alert"></div>
+                <div id="delete-alert"></div>
 
                 <form id="delete-form">
                     <div class="mb-3">

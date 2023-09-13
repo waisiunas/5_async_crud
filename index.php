@@ -29,8 +29,8 @@
                         </div>
 
                     </div>
-                    <div class="card-body">
-                        <table class="table table-bordered m-0" id="table">
+                    <div class="card-body" id="students-section">
+                        <!-- <table class="table table-bordered m-0" id="table">
                             <thead>
                                 <tr>
                                     <th>Sr. No.</th>
@@ -59,7 +59,9 @@
                             </tbody>
                         </table>
 
-                        <div class="alert alert-danger m-0 d-none" id="alert-msg"></div>
+                        <div class="alert alert-info m-0" id="alert-msg">
+                            no record found
+                        </div> -->
                     </div>
                 </div>
             </div>
@@ -72,6 +74,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
 
     <script>
+        showStudents();
+
         const addFormElement = document.querySelector("#add-form");
 
         addFormElement.addEventListener("submit", function(e) {
@@ -122,12 +126,186 @@
                             addAlertElement.innerHTML = alertMaker('danger', result.failure);
                         } else if (result.success) {
                             addAlertElement.innerHTML = alertMaker('success', result.success);
+                            showStudents();
+                            addNameElement.value = '';
+                            addEmailElement.value = '';
                         } else {
                             addAlertElement.innerHTML = alertMaker('danger', 'Something went wrong!');
                         }
                     })
             }
         });
+
+        function showStudents() {
+            fetch('./show-students.php')
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(function(result) {
+                    const studentsSectionElement = document.querySelector("#students-section");
+
+                    if (result.length > 0) {
+                        let studentRows = "";
+                        result.forEach(function(value, index) {
+                            studentRows += `<tr>
+                                    <td>${index + 1}</td>
+                                    <td>${value.name}</td>
+                                    <td>${value.email}</td>
+                                    <td>${value.created_at}</td>
+                                    <td>
+                                        <button type="button" class="btn btn-primary" onclick="editStudent(${value.id})" data-bs-toggle="modal" data-bs-target="#editModal">
+                                            Edit
+                                        </button>
+                                        <button type="button" class="btn btn-danger" onclick="deleteStudent(${value.id})" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                            Delete
+                                        </button>
+                                    </td>
+                                </tr>`;
+                        });
+
+                        studentsSectionElement.innerHTML = `<table class="table table-bordered m-0" id="table">
+                            <thead>
+                                <tr>
+                                    <th>Sr. No.</th>
+                                    <th>Name</th>
+                                    <th>Duration</th>
+                                    <th>Created At</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                ${studentRows}
+                            </tbody>
+                        </table>`;
+                    } else {
+                        studentsSectionElement.innerHTML = `<div class="alert alert-info m-0" id="alert-msg">No record found!</div>`;
+                    }
+                })
+        }
+
+        let studentId = '';
+
+        function editStudent(id) {
+            studentId = id;
+            const data = {
+                id: id,
+                submit: 1,
+            };
+
+            fetch('./show-single-student.php', {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                    headers: {
+                        'Content-Type': 'application.json'
+                    }
+                })
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(function(result) {
+                    const editNameElement = document.querySelector("#edit-name");
+                    const editEmailElement = document.querySelector("#edit-email");
+
+                    editNameElement.value = result.name;
+                    editEmailElement.value = result.email;
+                    // console.log(result);
+                })
+        }
+
+        const editFormElement = document.querySelector("#edit-form");
+
+        editFormElement.addEventListener("submit", function(e) {
+            e.preventDefault();
+
+            const editAlertElement = document.querySelector("#edit-alert");
+            const editNameElement = document.querySelector("#edit-name");
+            const editEmailElement = document.querySelector("#edit-email");
+
+            let editNameValue = editNameElement.value;
+            let editEmailValue = editEmailElement.value;
+
+            editNameElement.classList.remove('is-invalid');
+            editEmailElement.classList.remove('is-invalid');
+            editAlertElement.innerHTML = "";
+
+            if (editNameValue == "") {
+                editNameElement.classList.add('is-invalid');
+                editAlertElement.innerHTML = alertMaker('danger', 'Enter the name!');
+            } else if (editEmailValue == "") {
+                editEmailElement.classList.add('is-invalid');
+                editAlertElement.innerHTML = alertMaker('danger', 'Enter the email!');
+            } else {
+                const data = {
+                    name: editNameValue,
+                    email: editEmailValue,
+                    id: studentId,
+                    submit: 1,
+                }
+
+                fetch('./edit-student.php', {
+                        method: 'POST',
+                        body: JSON.stringify(data),
+                        headers: {
+                            'Content-Type': 'application.json'
+                        }
+                    })
+                    .then(function(response) {
+                        return response.json();
+                    })
+                    .then(function(result) {
+                        if (result.errorName) {
+                            editNameElement.classList.add('is-invalid');
+                            editAlertElement.innerHTML = alertMaker('danger', result.errorName);
+                        } else if (result.errorEmail) {
+                            editEmailElement.classList.add('is-invalid');
+                            editAlertElement.innerHTML = alertMaker('danger', result.errorEmail);
+                        } else if (result.failure) {
+                            editAlertElement.innerHTML = alertMaker('danger', result.failure);
+                        } else if (result.success) {
+                            editAlertElement.innerHTML = alertMaker('success', result.success);
+                            showStudents();
+                        } else {
+                            editAlertElement.innerHTML = alertMaker('danger', 'Something went wrong!');
+                        }
+                    })
+            }
+        });
+
+        function deleteStudent(id) {
+            const deleteFormElement = document.querySelector("#delete-form");
+
+            deleteFormElement.addEventListener("submit", function(e) {
+                e.preventDefault();
+
+                const deleteAlertElement = document.querySelector("#delete-alert");
+                const data = {
+                    id: id,
+                    submit: 1,
+                }
+
+                fetch('./delete-student.php', {
+                        method: 'POST',
+                        body: JSON.stringify(data),
+                        headers: {
+                            'Content-Type': 'application.json'
+                        }
+                    })
+                    .then(function(response) {
+                        return response.json();
+                    })
+                    .then(function(result) {
+                        if (result.failure) {
+                            deleteAlertElement.innerHTML = alertMaker('danger', result.failure);
+                        } else if (result.success) {
+                            deleteAlertElement.innerHTML = alertMaker('success', result.success);
+                            showStudents();
+                        } else {
+                            deleteAlertElement.innerHTML = alertMaker('danger', 'Something went wrong!');
+                        }
+                    })
+            });
+        }
 
         function alertMaker(cls, msg) {
             return `<div class="alert alert-${cls} alert-dismissible fade show" role="alert">${msg}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>`;
