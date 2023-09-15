@@ -70,8 +70,6 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div id="delete-alert"></div>
-
                 <form id="delete-form">
                     <div class="mb-3">
                         Are you sure, you want to delete?

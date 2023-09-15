@@ -22,15 +22,18 @@
                                 <h4>Students</h4>
                             </div>
                             <div class="col-6 text-end">
-                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addModal">
+                                <button type="button" class="btn btn-primary" onclick="clearAddModal()" data-bs-toggle="modal" data-bs-target="#addModal">
                                     Add Student
                                 </button>
                             </div>
                         </div>
 
                     </div>
-                    <div class="card-body" id="students-section">
-                        <!-- <table class="table table-bordered m-0" id="table">
+
+                    <div class="card-body">
+                        <div id="alert"></div>
+                        <div id="students-section">
+                            <!-- <table class="table table-bordered m-0" id="table">
                             <thead>
                                 <tr>
                                     <th>Sr. No.</th>
@@ -62,6 +65,7 @@
                         <div class="alert alert-info m-0" id="alert-msg">
                             no record found
                         </div> -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -188,6 +192,7 @@
 
         function editStudent(id) {
             studentId = id;
+            clearEditModal();
             const data = {
                 id: id,
                 submit: 1,
@@ -210,7 +215,7 @@
                     editNameElement.value = result.name;
                     editEmailElement.value = result.email;
                     // console.log(result);
-                })
+                });
         }
 
         const editFormElement = document.querySelector("#edit-form");
@@ -278,7 +283,7 @@
             deleteFormElement.addEventListener("submit", function(e) {
                 e.preventDefault();
 
-                const deleteAlertElement = document.querySelector("#delete-alert");
+                const alertElement = document.querySelector("#alert");
                 const data = {
                     id: id,
                     submit: 1,
@@ -296,12 +301,13 @@
                     })
                     .then(function(result) {
                         if (result.failure) {
-                            deleteAlertElement.innerHTML = alertMaker('danger', result.failure);
+                            alertElement.innerHTML = alertMaker('danger', result.failure);
                         } else if (result.success) {
-                            deleteAlertElement.innerHTML = alertMaker('success', result.success);
+                            alertElement.innerHTML = alertMaker('success', result.success);
                             showStudents();
+                            closeDeleteModal();
                         } else {
-                            deleteAlertElement.innerHTML = alertMaker('danger', 'Something went wrong!');
+                            alertElement.innerHTML = alertMaker('danger', 'Something went wrong!');
                         }
                     })
             });
@@ -309,6 +315,42 @@
 
         function alertMaker(cls, msg) {
             return `<div class="alert alert-${cls} alert-dismissible fade show" role="alert">${msg}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>`;
+        }
+
+        function clearAddModal() {
+            const addAlertElement = document.querySelector("#add-alert");
+            const addNameElement = document.querySelector("#add-name");
+            const addEmailElement = document.querySelector("#add-email");
+
+            addAlertElement.innerHTML = "";
+
+            addNameElement.value = "";
+            addEmailElement.value = "";
+
+            addNameElement.classList.remove("is-invalid");
+            addEmailElement.classList.remove("is-invalid");
+        }
+
+        function clearEditModal() {
+            const editAlertElement = document.querySelector("#edit-alert");
+            const editNameElement = document.querySelector("#edit-name");
+            const editEmailElement = document.querySelector("#edit-email");
+
+            editAlertElement.innerHTML = "";
+
+            editNameElement.classList.remove("is-invalid");
+            editEmailElement.classList.remove("is-invalid");
+        }
+
+        function closeDeleteModal() {
+            const deleteModalElement = document.querySelector('#deleteModal');
+            deleteModalElement.style.display = 'none';
+            deleteModalElement.classList.remove('show');
+            document.body.classList.remove('modal-open');
+            const modalBackdrop = document.querySelector('.modal-backdrop');
+            if (modalBackdrop) {
+                modalBackdrop.parentNode.removeChild(modalBackdrop);
+            }
         }
     </script>
 
